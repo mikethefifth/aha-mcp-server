@@ -27,14 +27,14 @@ func (tc *ToolsClient) Get{%s= obj.Singular.PascalCase() %}(ctx context.Context,
 	}); err != nil {
 		return mcputil.NewCallToolResultForAny(fmt.Sprintf("error getting {%s obj.Singular.Display() %}: %v", err), true), nil, err
 	} else if {%s obj.Singular.CamelCase() %}JSON, err := io.ReadAll(resp.Body); err != nil {
-		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error unmarshaling API response: %v", err), true), nil, err
-	} else if jsonData, err := json.MarshalIndent(map[string]any{
-		"{%s obj.Singular.SnakeCase() %}": {%s obj.Singular.CamelCase() %}JSON,
+		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error reading API response: %v", err), true), nil, err
+	} else if jsonData, err := json.Marshal(map[string]any{
+		"{%s obj.Singular.SnakeCase() %}": json.RawMessage({%s obj.Singular.CamelCase() %}JSON),
 		"status_code": resp.StatusCode,
-	}, "", "  "); err != nil {
+	}); err != nil {
 		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling response: %v", err), true), nil, err
 	} else {
-		return mcputil.NewCallToolResultForAny(string(jsonData), false), string(jsonData), nil
+		return mcputil.NewCallToolResultForAny(string(jsonData), false), nil, nil
 	}
 }
 

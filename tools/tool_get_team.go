@@ -25,11 +25,11 @@ func (tc *ToolsClient) GetTeam(ctx context.Context, req *mcp.CallToolRequest, pa
 	}); err != nil {
 		return mcputil.NewCallToolResultForAny(fmt.Sprintf("error getting Team: %v", err), true), nil, err
 	} else if teamJSON, err := io.ReadAll(resp.Body); err != nil {
-		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error unmarshaling API response: %v", err), true), nil, err
-	} else if jsonData, err := json.MarshalIndent(map[string]any{
+		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error reading API response: %v", err), true), nil, err
+	} else if jsonData, err := json.Marshal(map[string]any{
 		"team":        json.RawMessage(teamJSON),
 		"status_code": resp.StatusCode,
-	}, "", "  "); err != nil {
+	}); err != nil {
 		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling response: %v", err), true), nil, err
 	} else {
 		return mcputil.NewCallToolResultForAny(string(jsonData), false), nil, nil

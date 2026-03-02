@@ -99,22 +99,22 @@ func (tc *ToolsClient) Get`)
 	qw422016.E().S(obj.Singular.CamelCase())
 //line tool_get_object_template.qtpl:29
 	qw422016.N().S(`JSON, err := io.ReadAll(resp.Body); err != nil {
-		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error unmarshaling API response: %v", err), true), nil, err
-	} else if jsonData, err := json.MarshalIndent(map[string]any{
+		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error reading API response: %v", err), true), nil, err
+	} else if jsonData, err := json.Marshal(map[string]any{
 		"`)
 //line tool_get_object_template.qtpl:32
 	qw422016.E().S(obj.Singular.SnakeCase())
 //line tool_get_object_template.qtpl:32
-	qw422016.N().S(`": `)
+	qw422016.N().S(`": json.RawMessage(`)
 //line tool_get_object_template.qtpl:32
 	qw422016.E().S(obj.Singular.CamelCase())
 //line tool_get_object_template.qtpl:32
-	qw422016.N().S(`JSON,
+	qw422016.N().S(`JSON),
 		"status_code": resp.StatusCode,
-	}, "", "  "); err != nil {
+	}); err != nil {
 		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling response: %v", err), true), nil, err
 	} else {
-		return mcputil.NewCallToolResultForAny(string(jsonData), false), string(jsonData), nil
+		return mcputil.NewCallToolResultForAny(string(jsonData), false), nil, nil
 	}
 }
 

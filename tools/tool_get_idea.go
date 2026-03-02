@@ -23,10 +23,10 @@ func (tc *ToolsClient) GetIdea(ctx context.Context, req *mcp.CallToolRequest, pa
 		return result, nil, nil
 	}
 
-	if jsonData, err := json.MarshalIndent(map[string]any{
+	if jsonData, err := json.Marshal(map[string]any{
 		"idea":        idea,
 		"status_code": resp.StatusCode,
-	}, "", "  "); err != nil {
+	}); err != nil {
 		result := mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling response: %v", err), true)
 		return result, nil, nil
 	} else {

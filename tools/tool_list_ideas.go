@@ -79,10 +79,10 @@ func (tc *ToolsClient) ListIdeas(ctx context.Context, req *mcp.CallToolRequest, 
 		return result, nil, nil
 	}
 
-	if jsonData, err := json.MarshalIndent(map[string]any{
+	if jsonData, err := json.Marshal(map[string]any{
 		"ideas":       ideas,
 		"status_code": resp.StatusCode,
-	}, "", "  "); err != nil {
+	}); err != nil {
 		result := mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling response: %v", err), true)
 		return result, nil, nil
 	} else {

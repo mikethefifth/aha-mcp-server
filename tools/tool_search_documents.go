@@ -152,7 +152,7 @@ func (tc *ToolsClient) SearchDocuments(ctx context.Context, req *mcp.CallToolReq
 	}
 
 	// Marshal the final response
-	jsonData, err := json.MarshalIndent(searchResults, "", "  ")
+	jsonData, err := json.Marshal(searchResults)
 	if err != nil {
 		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling response: %v", err), true), nil, err
 	}
