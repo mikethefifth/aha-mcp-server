@@ -27,12 +27,12 @@ func (tc *ToolsClient) GetEpic(ctx context.Context, req *mcp.CallToolRequest, pa
 	} else if epicJSON, err := io.ReadAll(resp.Body); err != nil {
 		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error unmarshaling API response: %v", err), true), nil, err
 	} else if jsonData, err := json.MarshalIndent(map[string]any{
-		"epic":        epicJSON,
+		"epic":        json.RawMessage(epicJSON),
 		"status_code": resp.StatusCode,
 	}, "", "  "); err != nil {
 		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling response: %v", err), true), nil, err
 	} else {
-		return mcputil.NewCallToolResultForAny(string(jsonData), false), string(jsonData), nil
+		return mcputil.NewCallToolResultForAny(string(jsonData), false), nil, nil
 	}
 }
 

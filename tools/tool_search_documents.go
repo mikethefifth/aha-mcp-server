@@ -1,7 +1,6 @@
 package tools
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -35,7 +34,7 @@ type GraphQLError struct {
 }
 
 type SearchData struct {
-	Search SearchResults `json:"search"`
+	Search SearchResults `json:"searchDocuments"`
 }
 
 type SearchResults struct {
@@ -55,7 +54,7 @@ type DocumentNode struct {
 
 const searchDocumentsQuery = `
 query SearchDocuments($query: String!, $searchableType: [String!]) {
-  search(query: $query, searchableType: $searchableType, first: 50) {
+  searchDocuments(filters: { query: $query, searchableType: $searchableType }) {
     nodes {
       name
       url
@@ -92,22 +91,13 @@ func (tc *ToolsClient) SearchDocuments(ctx context.Context, req *mcp.CallToolReq
 		Variables: variables,
 	}
 
-	// Marshal request body
-	requestBody, err := json.Marshal(graphqlReq)
-	if err != nil {
-		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling GraphQL request: %v", err), true), nil, err
-	}
-
 	// Use the simpleClient to make the GraphQL request
 	httpReq := httpsimple.Request{
-		Method: http.MethodPost,
-		URL:    "/api/graphql",
-		Body:   bytes.NewBuffer(requestBody),
+		Method:   http.MethodPost,
+		URL:      "/api/v2/graphql",
+		Body:     graphqlReq,
+		BodyType: httpsimple.BodyTypeJSON,
 	}
-	if httpReq.Headers == nil {
-		httpReq.Headers = make(http.Header)
-	}
-	httpReq.Headers.Set("Content-Type", "application/json")
 
 	resp, err := tc.simpleClient.Do(ctx, httpReq)
 	if err != nil {
@@ -167,7 +157,7 @@ func (tc *ToolsClient) SearchDocuments(ctx context.Context, req *mcp.CallToolReq
 		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling response: %v", err), true), nil, err
 	}
 
-	return mcputil.NewCallToolResultForAny(string(jsonData), false), string(jsonData), nil
+	return mcputil.NewCallToolResultForAny(string(jsonData), false), nil, nil
 }
 
 func SearchDocumentsTool() *mcp.Tool {

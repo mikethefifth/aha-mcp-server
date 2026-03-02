@@ -87,7 +87,7 @@ func (tc *ToolsClient) ListIdeas(ctx context.Context, req *mcp.CallToolRequest, 
 		return result, nil, nil
 	} else {
 		result := mcputil.NewCallToolResultForAny(string(jsonData), false)
-		return result, string(jsonData), nil
+		return result, nil, nil
 	}
 }
 
