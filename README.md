@@ -5,7 +5,7 @@
 [![Docs][docs-godoc-svg]][docs-godoc-url]
 [![License][license-svg]][license-url]
 
-A comprehensive Model Context Protocol (MCP) server for [Aha!](https://www.aha.io/) that enables AI assistants to interact with your Aha! workspace data. This server provides 13 tools to retrieve and search various Aha! objects, making it easy to integrate Aha! data into AI workflows.
+A comprehensive Model Context Protocol (MCP) server for [Aha!](https://www.aha.io/) that enables AI assistants to interact with your Aha! workspace data. This server provides 16 tools to retrieve and search various Aha! objects, making it easy to integrate Aha! data into AI workflows.
 
 ## What is MCP?
 
@@ -13,7 +13,7 @@ The [Model Context Protocol](https://modelcontextprotocol.io/) is an open standa
 
 ## Features
 
-- **13 comprehensive tools** for accessing and searching Aha! objects
+- **16 comprehensive tools** for accessing and searching Aha! objects
 - **Secure authentication** using Aha! API tokens
 - **Easy configuration** with environment variables
 - **Multiple deployment options** (stdio or HTTP)
@@ -32,7 +32,9 @@ This server provides the following tools to retrieve and search Aha! data:
 | **Features** | `get_feature` | Retrieve a specific feature by ID |
 | **Goals** | `get_goal` | Retrieve a specific goal by ID |
 | **Ideas** | `get_idea` | Retrieve a specific idea by ID |
+| **Ideas** | `list_ideas` | List ideas with optional filtering and pagination |
 | **Initiatives** | `get_initiative` | Retrieve a specific initiative by ID |
+| **Initiatives** | `list_initiatives` | List initiatives with optional filtering and pagination |
 | **Key Results** | `get_key_result` | Retrieve a specific key result by ID |
 | **Personas** | `get_persona` | Retrieve a specific persona by ID |
 | **Releases** | `get_release` | Retrieve a specific release by ID |
@@ -125,6 +127,16 @@ Once configured, you can use natural language with your AI assistant to interact
 - `search_documents` requires:
   - `query` (required): Search query string
   - `searchable_type` (optional): Document type to search (defaults to "Page")
+
+**List Ideas Tool:**
+- `list_ideas` supports optional filters:
+  - `q`: Search term to match against idea name
+  - `sort`: `recent`, `trending`, or `popular`
+  - `workflow_status`: Filter by status ID or name
+  - `tag`: Filter by tag value
+  - `created_since`, `created_before`, `updated_since`: ISO8601 timestamps
+  - `user_id`, `idea_user_id`: Filter by user
+  - `page`, `per_page`: Pagination
 
 **Get Tools:**
 Each get tool requires a specific ID parameter:
@@ -243,7 +255,7 @@ When updating the version, update it in both [`README.md`](README.md) and [`serv
 
 | Server | Tools | License | Language |
 |--------|-------|---------|-----------|
-| **This Server** | 13 | MIT | Go |
+| **This Server** | 16 | MIT | Go |
 | [Official Aha! MCP](https://support.aha.io/aha-develop/integrations/mcp-server/mcp-server-connection~7493691606168806509) | 3 | ISC | TypeScript |
 | [popand/aha-mcp](https://github.com/popand/aha-mcp) | 4 | ISC | TypeScript |
 | [Zapier MCP](https://zapier.com/mcp/aha) | 2 | SaaS | - |

@@ -11,6 +11,7 @@ func (tc *ToolsClient) AddTools(svr *mcp.Server) {
 	mcp.AddTool(svr, GetFeatureTool(), tc.GetFeature)
 	mcp.AddTool(svr, GetGoalTool(), tc.GetGoal)
 	mcp.AddTool(svr, GetInitiativeTool(), tc.GetInitiative)
+	mcp.AddTool(svr, ListInitiativesTool(), tc.ListInitiatives)
 	mcp.AddTool(svr, GetKeyResultTool(), tc.GetKeyResult)
 	mcp.AddTool(svr, GetPersonaTool(), tc.GetPersona)
 	mcp.AddTool(svr, GetReleaseTool(), tc.GetRelease)
