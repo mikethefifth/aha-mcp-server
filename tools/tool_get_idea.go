@@ -4,8 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 
 	"github.com/google/jsonschema-go/jsonschema"
+	"github.com/grokify/mogo/net/http/httpsimple"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
 	"github.com/grokify/aha-mcp-server/mcputil"
@@ -16,22 +19,20 @@ type GetIdeaParams struct {
 }
 
 func (tc *ToolsClient) GetIdea(ctx context.Context, req *mcp.CallToolRequest, params GetIdeaParams) (*mcp.CallToolResult, any, error) {
-	idea, resp, err := tc.client.IdeasAPI.GetIdeaExecute(
-		tc.client.IdeasAPI.GetIdea(ctx, params.IdeaID))
-	if err != nil {
-		result := mcputil.NewCallToolResultForAny(fmt.Sprintf("Error getting idea: %v", err), true)
-		return result, nil, nil
-	}
-
-	if jsonData, err := json.Marshal(map[string]any{
-		"idea":        idea,
+	if resp, err := tc.simpleClient.Do(ctx, httpsimple.Request{
+		Method: http.MethodGet,
+		URL:    fmt.Sprintf("/api/v1/ideas/%s", params.IdeaID),
+	}); err != nil {
+		return mcputil.NewCallToolResultForAny(fmt.Sprintf("error getting Idea: %v", err), true), nil, err
+	} else if ideaJSON, err := io.ReadAll(resp.Body); err != nil {
+		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error reading API response: %v", err), true), nil, err
+	} else if jsonData, err := json.Marshal(map[string]any{
+		"idea":        json.RawMessage(ideaJSON),
 		"status_code": resp.StatusCode,
 	}); err != nil {
-		result := mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling response: %v", err), true)
-		return result, nil, nil
+		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling response: %v", err), true), nil, err
 	} else {
-		result := mcputil.NewCallToolResultForAny(string(jsonData), false)
-		return result, nil, nil
+		return mcputil.NewCallToolResultForAny(string(jsonData), false), nil, nil
 	}
 }
 

@@ -4,9 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
+	"io"
+	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/google/jsonschema-go/jsonschema"
+	"github.com/grokify/mogo/net/http/httpsimple"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
 	"github.com/grokify/aha-mcp-server/mcputil"
@@ -28,66 +32,63 @@ type ListIdeasParams struct {
 }
 
 func (tc *ToolsClient) ListIdeas(ctx context.Context, req *mcp.CallToolRequest, params ListIdeasParams) (*mcp.CallToolResult, any, error) {
-	apiReq := tc.client.IdeasAPI.ListIdeas(ctx)
-
+	q := url.Values{}
 	if params.Q != "" {
-		apiReq = apiReq.Q(params.Q)
+		q.Set("q", params.Q)
 	}
 	if params.Spam != nil {
-		apiReq = apiReq.Spam(*params.Spam)
+		q.Set("spam", strconv.FormatBool(*params.Spam))
 	}
 	if params.WorkflowStatus != "" {
-		apiReq = apiReq.WorkflowStatus(params.WorkflowStatus)
+		q.Set("workflow_status", params.WorkflowStatus)
 	}
 	if params.Sort != "" {
-		apiReq = apiReq.Sort(params.Sort)
+		q.Set("sort", params.Sort)
 	}
 	if params.CreatedBefore != "" {
-		if t, err := time.Parse(time.RFC3339, params.CreatedBefore); err == nil {
-			apiReq = apiReq.CreatedBefore(t)
-		}
+		q.Set("created_before", params.CreatedBefore)
 	}
 	if params.CreatedSince != "" {
-		if t, err := time.Parse(time.RFC3339, params.CreatedSince); err == nil {
-			apiReq = apiReq.CreatedSince(t)
-		}
+		q.Set("created_since", params.CreatedSince)
 	}
 	if params.UpdatedSince != "" {
-		if t, err := time.Parse(time.RFC3339, params.UpdatedSince); err == nil {
-			apiReq = apiReq.UpdatedSince(t)
-		}
+		q.Set("updated_since", params.UpdatedSince)
 	}
 	if params.Tag != "" {
-		apiReq = apiReq.Tag(params.Tag)
+		q.Set("tag", params.Tag)
 	}
 	if params.UserID != "" {
-		apiReq = apiReq.UserId(params.UserID)
+		q.Set("user_id", params.UserID)
 	}
 	if params.IdeaUserID != "" {
-		apiReq = apiReq.IdeaUserId(params.IdeaUserID)
+		q.Set("idea_user_id", params.IdeaUserID)
 	}
 	if params.Page != nil {
-		apiReq = apiReq.Page(*params.Page)
+		q.Set("page", strconv.Itoa(int(*params.Page)))
 	}
 	if params.PerPage != nil {
-		apiReq = apiReq.PerPage(*params.PerPage)
+		q.Set("per_page", strconv.Itoa(int(*params.PerPage)))
 	}
 
-	ideas, resp, err := apiReq.Execute()
-	if err != nil {
-		result := mcputil.NewCallToolResultForAny(fmt.Sprintf("Error listing ideas: %v", err), true)
-		return result, nil, nil
+	apiURL := "/api/v1/ideas"
+	if len(q) > 0 {
+		apiURL += "?" + q.Encode()
 	}
 
-	if jsonData, err := json.Marshal(map[string]any{
-		"ideas":       ideas,
+	if resp, err := tc.simpleClient.Do(ctx, httpsimple.Request{
+		Method: http.MethodGet,
+		URL:    apiURL,
+	}); err != nil {
+		return mcputil.NewCallToolResultForAny(fmt.Sprintf("error listing Ideas: %v", err), true), nil, err
+	} else if ideasJSON, err := io.ReadAll(resp.Body); err != nil {
+		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error reading API response: %v", err), true), nil, err
+	} else if jsonData, err := json.Marshal(map[string]any{
+		"ideas":       json.RawMessage(ideasJSON),
 		"status_code": resp.StatusCode,
 	}); err != nil {
-		result := mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling response: %v", err), true)
-		return result, nil, nil
+		return mcputil.NewCallToolResultForAny(fmt.Sprintf("Error marshaling response: %v", err), true), nil, err
 	} else {
-		result := mcputil.NewCallToolResultForAny(string(jsonData), false)
-		return result, nil, nil
+		return mcputil.NewCallToolResultForAny(string(jsonData), false), nil, nil
 	}
 }
 
