@@ -29,6 +29,7 @@ This server provides the following tools to retrieve and search Aha! data:
 | **Search** | `search_documents` | Search for documents across your Aha! workspace using GraphQL |
 | **Search** | `search_ideas` | Full-text search ideas by keyword across name, description, and ID |
 | **Comments** | `get_comment` | Retrieve a specific comment by ID |
+| **Comments** | `list_idea_comments` | List both internal and portal comments on an idea (filterable) |
 | **Epics** | `get_epic` | Retrieve a specific epic by ID |
 | **Features** | `get_feature` | Retrieve a specific feature by ID |
 | **Goals** | `get_goal` | Retrieve a specific goal by ID |
@@ -147,6 +148,13 @@ Once configured, you can use natural language with your AI assistant to interact
   - `idea_portal_id`: Filter to specific portal
   - `fields`: Comma-separated fields or `*` for all (includes `vote_count`, `endorsements_count`, `duplicate_of`, `created_by`)
   - `page`, `per_page`: Pagination
+
+**List Idea Comments Tool:**
+- `list_idea_comments` retrieves comments on an idea:
+  - `idea_id` (required): Idea reference number (e.g., `EXP-I-397`)
+  - `comment_type`: `all` (default, both internal and portal), `internal` (team-only comments), or `portal` (portal-visible only)
+  - `page`, `per_page`: Pagination
+  - Returns both internal and portal comments by default, enabling discovery of all comments including internal CI notes
 
 **Get Tools:**
 Each get tool requires a specific ID parameter:
